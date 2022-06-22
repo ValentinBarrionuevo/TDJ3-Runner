@@ -7,16 +7,17 @@ public class Ground : MonoBehaviour
     public float groundRight;
     public float screenRight;
     public float timer = 5;
-    public bool paredSpawn = false;
-    public bool preguntado = false;
+
 
     public int randomNumberGenerator = 1;
 
     bool didGenerateGround = false;
 
     BoxCollider2D collider;
-    
+
     Player player;
+
+    Comms comms;
 
     public Obstacle obstacleTemplate;
 
@@ -26,6 +27,9 @@ public class Ground : MonoBehaviour
     private void Awake()
     {
         player = GameObject.Find("Player").GetComponent<Player>();
+
+        comms = GameObject.Find("Comms").GetComponent<Comms>();
+
 
         collider = GetComponent<BoxCollider2D>();
 
@@ -41,18 +45,18 @@ public class Ground : MonoBehaviour
     void Update()
     {
 
-    
-            switch (player.distance)
-            {
-                 case float i when i > 100 && i < 150:
-                        preguntado = true;
-                     break;
 
-                 default:
-                     break;
-    
-            }
-        
+        switch (player.distance)
+        {
+            case float i when i > 100 && i < 105:
+                comms.preguntado = true;
+                break;
+
+            default:
+                break;
+
+        }
+
     }
 
     private void FixedUpdate()
@@ -64,7 +68,7 @@ public class Ground : MonoBehaviour
             timer = 5;
             for (int i = 0; i < 1; i++)
             {
-                randomNumberGenerator = Random.Range(1,3);
+                randomNumberGenerator = Random.Range(1, 3);
             }
             //Debug.Log(randomNumberGenerator);
 
@@ -117,7 +121,7 @@ public class Ground : MonoBehaviour
 
         ////////////////////////obstaculos///////////////////////////////
 
-        if (preguntado == false)
+        if (comms.preguntado == false)
         {
             switch (randomNumberGenerator)
             {
@@ -141,7 +145,7 @@ public class Ground : MonoBehaviour
                         //Debug.Log(boxPos);
                     }
 
-                   // Debug.Log("entre 1 y 2");
+                    // Debug.Log("entre 1 y 2");
 
                     break;
 
@@ -164,7 +168,7 @@ public class Ground : MonoBehaviour
                         //Debug.Log(boxPos);
                     }
 
-                  //  Debug.Log("entre 3 y 4");
+                    //  Debug.Log("entre 3 y 4");
 
                     break;
             }
@@ -175,20 +179,20 @@ public class Ground : MonoBehaviour
         }
         else
         {
-            if (paredSpawn==false)
+            if (comms.paredSpawn == false)
             {
-                paredSpawn = true;
-                preguntado = true;
+                comms.paredSpawn = true;
+                comms.preguntado = true;
 
                 GameObject pared = Instantiate(paredPregunta.gameObject);
                 float y = 17;
                 float halfWitdh = (65 / 2) - 1;
                 float left = go.transform.position.x - halfWitdh;
                 float right = go.transform.position.x + halfWitdh;
-    
+
                 float x = Random.Range(left, right);
-        
-                 Vector2 boxPos = new Vector2(x, y);
+
+                Vector2 boxPos = new Vector2(x, y);
 
                 pared.transform.position = boxPos;
             }

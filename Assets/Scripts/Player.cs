@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -17,21 +15,26 @@ public class Player : MonoBehaviour
     public bool isGrounded = true;
     public bool isHoldingJump = false;
     public float distance = 70;
-    public int life = 3;
 
     public float timer = 0.2f;
 
     public float jumpThreshold = 2;
 
-    
+    Comms comms;
 
-    void Start()
+    private void Awake()
     {
-        
+        comms = GameObject.Find("Comms").GetComponent<Comms>();
+
+        comms.index = SceneManager.GetActiveScene().buildIndex;
+
+
+
     }
 
     void Update()
     {
+
         Vector2 pos = transform.position;
         float groundDistance = Mathf.Abs(pos.y - groundHeight);
 
@@ -39,11 +42,11 @@ public class Player : MonoBehaviour
         if (isGrounded || groundDistance <= jumpThreshold)
         {
             if (Input.GetKeyDown(KeyCode.Space))
-               {
-                    isGrounded = false;
-                    velocity.y = jumpVelocity;
-                    isHoldingJump = true;
-              }
+            {
+                isGrounded = false;
+                velocity.y = jumpVelocity;
+                isHoldingJump = true;
+            }
 
         }
 
@@ -53,7 +56,7 @@ public class Player : MonoBehaviour
         }
 
 
-        if (life == 0)
+        if (comms.life == 0)
         {
             death();
         }
@@ -82,7 +85,7 @@ public class Player : MonoBehaviour
 
             }
 
-            Vector2 rayOrigin = new Vector2(pos.x + 0.7f, pos.y);
+            Vector2 rayOrigin = new Vector2(pos.x + 0.7f, (pos.y - 2.1f));
             Vector2 rayDirection = Vector2.up;
             float rayDistance = velocity.y * Time.fixedDeltaTime;
             RaycastHit2D hit2D = Physics2D.Raycast(rayOrigin, rayDirection, rayDistance);
@@ -92,7 +95,7 @@ public class Player : MonoBehaviour
                 if (PisoCollider != null)
                 {
                     groundHeight = hit2D.point.y;
-                    pos.y = groundHeight;
+                    pos.y = groundHeight + (transform.localScale.y / 2);
                     velocity.y = 0;
                     isGrounded = true;
                     timer = 0.2f;
@@ -113,15 +116,16 @@ public class Player : MonoBehaviour
                 velocity.x = maxXVelocity;
             }
 
-            Vector2 rayOrigin = new Vector2(pos.x - 0.7f, pos.y);
+            Vector2 rayOrigin = new Vector2(pos.x - 0.7f, (pos.y - 2.1f));
             Vector2 rayDirection = Vector2.up;
             float rayDistance = velocity.y * Time.fixedDeltaTime;
             RaycastHit2D hit2D = Physics2D.Raycast(rayOrigin, rayDirection, rayDistance);
-            if (hit2D.collider == null)
+
+            if (hit2D.collider != null)
             {
                 isGrounded = false;
             }
-            Debug.DrawRay(rayOrigin, rayDirection * rayDistance, Color.yellow);
+            Debug.DrawRay(rayOrigin, rayDirection * rayDistance, Color.black);
 
         }
 
@@ -130,7 +134,7 @@ public class Player : MonoBehaviour
             jumpTimer();
         }
 
-        Vector2 obstOrigin = new Vector2(pos.x, pos.y);
+        Vector2 obstOrigin = new Vector2(pos.x, (pos.y - (transform.localScale.y / 2)));
         RaycastHit2D obstHitX = Physics2D.Raycast(obstOrigin, Vector2.right, velocity.x * Time.fixedDeltaTime);
         if (obstHitX.collider != null)
         {
@@ -141,27 +145,78 @@ public class Player : MonoBehaviour
 
             if (obstacle != null)
             {
-
                 hit(obstacle);
             }
             else if (pared != null)
             {
-                Destroy(pared.gameObject);
 
+                Destroy(pared.gameObject);
                 SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
-                Time.timeScale = 0.2f;
+                Time.timeScale = 0;
+
             }
         }
+
+        ///////////////////////////////////////// check collide up//////////////////////////////////////
+
+        if (Input.GetKey("z"))
+        {
+
+            Debug.Log("no pega up");
+
+        }
+        else
+        {
+
+            Vector2 obstOrigin1 = new Vector2(pos.x, (pos.y + (transform.localScale.y / 2)));
+            RaycastHit2D obstHitX1 = Physics2D.Raycast(obstOrigin1, Vector2.right, velocity.x * Time.fixedDeltaTime);
+            if (obstHitX1.collider != null)
+            {
+
+                paredPregunta pared = obstHitX1.collider.GetComponent<paredPregunta>();
+
+                Obstacle obstacle = obstHitX1.collider.GetComponent<Obstacle>();
+
+                if (obstacle != null)
+                {
+                    hit(obstacle);
+                }
+                else if (pared != null)
+                {
+
+                    Destroy(pared.gameObject);
+                    SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
+                    Time.timeScale = 0;
+
+                }
+            }
+
+        }
+
+        ///////////////////////////////////////// check collide up//////////////////////////////////////
+
+
+
 
         RaycastHit2D obstHitY = Physics2D.Raycast(obstOrigin, Vector2.right, velocity.y * Time.fixedDeltaTime);
         if (obstHitY.collider != null)
         {
             Obstacle obstacle = obstHitY.collider.GetComponent<Obstacle>();
+            paredPregunta pared = obstHitX.collider.GetComponent<paredPregunta>();
+
 
             if (obstacle != null)
             {
                 hit(obstacle);
-            } 
+            }
+            else if (pared != null)
+            {
+
+                Destroy(pared.gameObject);
+                SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
+                Time.timeScale = 0;
+
+            }
         }
 
 
@@ -183,20 +238,22 @@ public class Player : MonoBehaviour
         Destroy(gameObject);
         Time.timeScale = 0;
 
-       // SceneManager.LoadScene("GameOver");
+        // SceneManager.LoadScene("GameOver");
     }
     private void changeLevel()
     {
         SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
-        
+
     }
 
     public void hit(Obstacle obstacle)
     {
         Destroy(obstacle.gameObject);
         velocity.x *= 0.6f;
-        life -= 1;
-        Debug.Log(life);
+        comms.life -= 1;
+        Debug.Log(comms.life);
     }
+
+
 
 }

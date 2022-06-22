@@ -5,92 +5,133 @@ using System.Collections.Generic;
 using System.Linq;
 using UnityEditor.SceneManagement;
 using UnityEngine.SceneManagement;
+using System;
 
 public class QuestionManager : MonoBehaviour
 {
-    Player player;
+    public Comms comms;
 
     public Questions[] Questions;
-    private static List<Questions> unansweredQuestions;
+    public Questions[] Questions2;
+    public Questions[] Questions3;
+
 
     private Questions currentQuestion;
 
     [SerializeField]
     private Text questionText;
 
-    private bool valor;
+    public bool valor = true;
 
+    
 
-    private void Start()
-    {
-        
-
-        if (unansweredQuestions == null || unansweredQuestions.Count == 0)
-        {
-            unansweredQuestions = Questions.ToList<Questions>();
-        }
-    }
     private void Awake()
     {
-        if (unansweredQuestions == null || unansweredQuestions.Count == 0)
+
+        comms = GameObject.Find("Comms").GetComponent<Comms>();
+
+        switch (comms.index)
         {
-            unansweredQuestions = Questions.ToList<Questions>(); 
+            case 0:
+
+                if (comms.unansweredQuestions == null || comms.unansweredQuestions.Count == 0)
+                {
+                    comms.unansweredQuestions = Questions.ToList<Questions>();
+                }
+
+                break;
+            case 2:
+
+                if (comms.unansweredQuestions == null || comms.unansweredQuestions.Count == 0)
+                {
+                    comms.unansweredQuestions = Questions2.ToList<Questions>();
+                }
+
+                break;
+             case 3:
+
+                if (comms.unansweredQuestions == null || comms.unansweredQuestions.Count == 0)
+                {
+                    comms.unansweredQuestions = Questions3.ToList<Questions>();
+                }
+
+                break;
         }
+
+
+        
+
 
         setCurrentQuestion();
         Debug.Log(currentQuestion.question + " is " + currentQuestion.isCorrect);
+        valor = currentQuestion.isCorrect;
+        Debug.Log(valor);
     }
     void setCurrentQuestion()
     {
 
-        int randomIndex = Random.Range(1    , unansweredQuestions.Count);
+        comms.unansweredQuestions.ForEach(Console.WriteLine);
+
+
+        int randomIndex = UnityEngine.Random.Range(1    , comms.unansweredQuestions.Count);
        // Debug.Log(randomIndex);
-        currentQuestion = unansweredQuestions[randomIndex];
+        currentQuestion = comms.unansweredQuestions[randomIndex];
 
         questionText.text = currentQuestion.question;
 
-        unansweredQuestions.RemoveAt(randomIndex);
+        comms.unansweredQuestions.RemoveAt(randomIndex);
 
-        valor = currentQuestion.isCorrect;
+
+
 
     }
 
     public void userSelectTrue()
     {
-        if (valor)
+        Debug.Log(valor);
+
+        if (valor == true)
         {
             Debug.Log("correct");
-            SceneManager.UnloadSceneAsync("QuestionsScene");
             Time.timeScale = 1;
-                
+            comms.paredSpawn = false;
+           
+
+            SceneManager.UnloadSceneAsync("QuestionsScene");
+
         }
         else
         {
-            Debug.Log("wrong");
-            SceneManager.UnloadSceneAsync("QuestionsScene");
+            Debug.Log("wrongTrue");
             Time.timeScale = 1;
-
+            comms.GetComponent<Comms>().preguntado = false;
+            comms.GetComponent<Comms>().paredSpawn = false;
+            comms.damage();
+            SceneManager.UnloadSceneAsync("QuestionsScene");
 
 
         }
     }
     public void userSelectFalse()
     {
-        if (!valor)
+        if (valor == false)
         {
             Debug.Log("correct");
-            SceneManager.UnloadSceneAsync("QuestionsScene");
             Time.timeScale = 1;
-
+            comms.GetComponent<Comms>().preguntado = false;
+            comms.GetComponent<Comms>().paredSpawn = false;
+            SceneManager.UnloadSceneAsync("QuestionsScene");
 
 
         }
         else
         {
             Debug.Log("wrong");
-            SceneManager.UnloadSceneAsync("QuestionsScene");
             Time.timeScale = 1;
-
+            comms.GetComponent<Comms>().preguntado = false;
+            comms.GetComponent<Comms>().paredSpawn = false;
+            comms.damage();
+            SceneManager.UnloadSceneAsync("QuestionsScene");
 
 
         }
