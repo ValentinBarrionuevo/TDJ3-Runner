@@ -1,6 +1,6 @@
 using UnityEngine;
 using UnityEngine.SceneManagement;
-
+using System.Collections;
 
 public class Player : MonoBehaviour
 {
@@ -15,6 +15,9 @@ public class Player : MonoBehaviour
     public bool isGrounded = true;
     public bool isHoldingJump = false;
     public float distance = 70;
+    private bool pressZ = false;
+    public Animator animator; 
+    public bool touched = false;
 
     public float timer = 0.2f;
 
@@ -34,6 +37,8 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+
+        animator.SetFloat("speed", Mathf.Abs(velocity.x));
 
         Vector2 pos = transform.position;
         float groundDistance = Mathf.Abs(pos.y - groundHeight);
@@ -66,6 +71,16 @@ public class Player : MonoBehaviour
 
     private void FixedUpdate()
     {
+
+        if (Input.GetKey(KeyCode.Space) && touched == false)
+        {
+            touched = true;
+            
+
+        } else if (touched == false)
+        {
+            velocity.x = 0;
+        }
 
         if (Input.GetKeyUp(KeyCode.Space))
         {
@@ -105,7 +120,7 @@ public class Player : MonoBehaviour
 
         }
 
-        if (isGrounded)
+        if (isGrounded && touched == true)
         {
             float velocityRatio = velocity.x / maxXVelocity;
             acceleration = maxAcceleration * (1 - velocityRatio);
@@ -134,7 +149,7 @@ public class Player : MonoBehaviour
             jumpTimer();
         }
 
-        Vector2 obstOrigin = new Vector2(pos.x, (pos.y - (transform.localScale.y / 2)));
+        Vector2 obstOrigin = new Vector2(pos.x + (transform.localScale.x / 2), (pos.y - (transform.localScale.y / 2)));
         RaycastHit2D obstHitX = Physics2D.Raycast(obstOrigin, Vector2.right, velocity.x * Time.fixedDeltaTime);
         if (obstHitX.collider != null)
         {
@@ -159,16 +174,16 @@ public class Player : MonoBehaviour
 
         ///////////////////////////////////////// check collide up//////////////////////////////////////
 
-        if (Input.GetKey("z"))
+        if (Input.GetKey("z") && pressZ == false && isGrounded)
         {
-
-            Debug.Log("no pega up");
+            Debug.Log("dash");
+            StartCoroutine("dash");
 
         }
-        else
+        else if(pressZ != true) 
         {
 
-            Vector2 obstOrigin1 = new Vector2(pos.x, (pos.y + (transform.localScale.y / 2)));
+            Vector2 obstOrigin1 = new Vector2((pos.x + (transform.localScale.x /2 )) , (pos.y + (transform.localScale.y / 2) - 3));
             RaycastHit2D obstHitX1 = Physics2D.Raycast(obstOrigin1, Vector2.right, velocity.x * Time.fixedDeltaTime);
             if (obstHitX1.collider != null)
             {
@@ -178,7 +193,7 @@ public class Player : MonoBehaviour
                 Obstacle obstacle = obstHitX1.collider.GetComponent<Obstacle>();
 
                 if (obstacle != null)
-                {
+                { 
                     hit(obstacle);
                 }
                 else if (pared != null)
@@ -253,6 +268,17 @@ public class Player : MonoBehaviour
         comms.life -= 1;
         Debug.Log(comms.life);
     }
+
+    public IEnumerator dash()
+    {
+        Debug.Log("abajo");
+        pressZ = true;
+        animator.SetBool("dash?", pressZ);
+        yield return new WaitForSecondsRealtime(0.8f);
+        Debug.Log("arriba");
+        pressZ = false;
+        animator.SetBool("dash?", pressZ);
+    } 
 
 
 

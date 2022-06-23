@@ -1,4 +1,6 @@
 using UnityEngine;
+using System.Collections;
+
 
 public class Ground : MonoBehaviour
 {
@@ -13,7 +15,7 @@ public class Ground : MonoBehaviour
 
     bool didGenerateGround = false;
 
-    BoxCollider2D collider;
+   // BoxCollider2D collider;
 
     Player player;
 
@@ -31,7 +33,7 @@ public class Ground : MonoBehaviour
         comms = GameObject.Find("Comms").GetComponent<Comms>();
 
 
-        collider = GetComponent<BoxCollider2D>();
+       // collider = GetComponent<BoxCollider2D>();
 
         screenRight = Camera.main.transform.position.x * 2;
 
@@ -48,11 +50,65 @@ public class Ground : MonoBehaviour
 
         switch (player.distance)
         {
-            case float i when i > 100 && i < 105:
+            case float i when i > 30 && i < 30.50f:
                 comms.preguntado = true;
+                StartCoroutine("askedBugFix");
+
+
                 break;
 
-            default:
+            case float i when i > 60 && i < 60.50f:
+                comms.preguntado = true;
+                StartCoroutine("askedBugFix");
+
+                break;
+
+            case float i when i > 100 && i < 100.50f:
+                comms.preguntado = true;
+                StartCoroutine("askedBugFix");
+
+                break;
+
+            case float i when i > 130 && i < 130.50f:
+                comms.preguntado = true;
+                StartCoroutine("askedBugFix");
+
+                break;
+
+            case float i when i > 170 && i < 170.50f:
+                comms.preguntado = true;
+                StartCoroutine("askedBugFix");
+
+                break;
+
+            case float i when i > 200 && i < 200.50f:
+                comms.preguntado = true;
+                StartCoroutine("askedBugFix");
+
+                break;
+
+            case float i when i > 240 && i < 240.50f:
+                comms.preguntado = true;
+                StartCoroutine("askedBugFix");
+
+                break;
+
+            case float i when i > 270 && i < 270.50f:
+                comms.preguntado = true;
+                StartCoroutine("askedBugFix");
+
+                break;
+
+            case float i when i > 280 && i < 280.50f:
+                comms.preguntado = true;
+                StartCoroutine("askedBugFix");
+
+                break;
+
+            case float i when i > 290 && i < 290.50f:
+                comms.preguntado = true;
+                StartCoroutine("askedBugFix");
+
                 break;
 
         }
@@ -76,7 +132,12 @@ public class Ground : MonoBehaviour
         timer -= Time.fixedDeltaTime;
 
         Vector2 pos = transform.position;
+
+
+
         pos.x -= player.velocity.x * Time.fixedDeltaTime;
+
+
 
         groundRight = transform.position.x + (transform.localScale.x / 2);
 
@@ -127,13 +188,13 @@ public class Ground : MonoBehaviour
             {
                 case 1:
 
-                    int obstacleNum = Random.Range(0, 4);
+                    int obstacleNum = Random.Range(0, 2);
 
                     for (int i = 0; i < obstacleNum; i++)
                     {
                         GameObject box = Instantiate(obstacleTemplate.gameObject);
                         float y = 8;
-                        float halfWitdh = (65 / 2) - 1;
+                        float halfWitdh = (65 / 2) - 5;
                         float left = go.transform.position.x - halfWitdh;
                         float right = go.transform.position.x + halfWitdh;
 
@@ -151,12 +212,12 @@ public class Ground : MonoBehaviour
 
                 case 2:
 
-                    int obstacleUpNum = Random.Range(0, 4);
+                    int obstacleUpNum = Random.Range(1, 2);
                     for (int i = 0; i < obstacleUpNum; i++)
                     {
                         GameObject box = Instantiate(obstacleTemplate.gameObject);
-                        float y = 12;
-                        float halfWitdh = (65 / 2) - 1;
+                        float y = 16;
+                        float halfWitdh = (65 / 2) - 5;
                         float left = go.transform.position.x - halfWitdh;
                         float right = go.transform.position.x + halfWitdh;
 
@@ -205,6 +266,20 @@ public class Ground : MonoBehaviour
 
 
     }
+
+
+    public IEnumerator askedBugFix()
+    {
+        Debug.Log("esperando...");
+        yield return new WaitForSecondsRealtime(2f);
+
+        comms.preguntado = false;
+        comms.paredSpawn = false;
+
+        Debug.Log("arreglado");
+
+    }
+
 
     private void hit()
     {
