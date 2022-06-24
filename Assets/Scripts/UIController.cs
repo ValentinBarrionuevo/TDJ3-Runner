@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class UIController : MonoBehaviour
@@ -33,5 +34,23 @@ public class UIController : MonoBehaviour
         distanceText.text = distance + "m";
 
         vidaText.text = comms.life + "";
+    }
+
+    public void play()
+    {
+        SceneManager.LoadScene(1, LoadSceneMode.Single);
+
+    }
+
+    public void credits()
+    {
+        SceneManager.LoadScene(3,LoadSceneMode.Single);
+
+    }
+
+    public void mainMenu()
+    {
+        SceneManager.LoadScene(0, LoadSceneMode.Single);
+
     }
 }

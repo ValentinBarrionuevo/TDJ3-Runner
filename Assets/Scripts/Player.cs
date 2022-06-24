@@ -5,12 +5,15 @@ using System.Collections;
 public class Player : MonoBehaviour
 {
 
+    private Vector2 startTouchPosition, endTouchPosition;
+    private Vector2 startTouchPosition1, endTouchPosition1;
+
     public float gravity;
     public Vector2 velocity;
     public float acceleration = 10;
     public float maxAcceleration = 10;
     public float maxXVelocity = 100;
-    public float jumpVelocity = 20;
+    public float jumpVelocity = 30;
     public float groundHeight = 7;
     public bool isGrounded = true;
     public bool isHoldingJump = false;
@@ -18,6 +21,8 @@ public class Player : MonoBehaviour
     private bool pressZ = false;
     public Animator animator; 
     public bool touched = false;
+    private bool startJump = false;
+    private bool startDash = false;
 
     public float timer = 0.2f;
 
@@ -29,14 +34,25 @@ public class Player : MonoBehaviour
     {
         comms = GameObject.Find("Comms").GetComponent<Comms>();
 
-        comms.index = SceneManager.GetActiveScene().buildIndex;
+        //comms.index = SceneManager.GetActiveScene().buildIndex;
 
-
+        if (Time.timeScale == 0)
+        {
+            Time.timeScale = 1;
+        }
 
     }
 
     void Update()
     {
+
+        if (distance >= 300)
+        {
+            death();
+        }
+
+        swipeUpCheck();
+        swipeDownCheck();
 
         animator.SetFloat("speed", Mathf.Abs(velocity.x));
 
@@ -46,18 +62,14 @@ public class Player : MonoBehaviour
 
         if (isGrounded || groundDistance <= jumpThreshold)
         {
-            if (Input.GetKeyDown(KeyCode.Space))
+            if (startJump==true)
             {
                 isGrounded = false;
                 velocity.y = jumpVelocity;
-                isHoldingJump = true;
+                StartCoroutine("jump");
+
             }
 
-        }
-
-        if (Input.GetKeyUp(KeyCode.Space))
-        {
-            isHoldingJump = false;
         }
 
 
@@ -72,7 +84,7 @@ public class Player : MonoBehaviour
     private void FixedUpdate()
     {
 
-        if (Input.GetKey(KeyCode.Space) && touched == false)
+        if ((Input.GetKey(KeyCode.Space) || Input.GetMouseButtonDown(0)) && touched == false)
         {
             touched = true;
             
@@ -82,9 +94,10 @@ public class Player : MonoBehaviour
             velocity.x = 0;
         }
 
-        if (Input.GetKeyUp(KeyCode.Space))
+
+        if (Input.GetKey(KeyCode.Space))
         {
-            isHoldingJump = false;
+            startJump = true;
         }
 
         distance += (velocity.x * Time.fixedDeltaTime) * 0.07f;
@@ -94,6 +107,7 @@ public class Player : MonoBehaviour
         if (!isGrounded)
         {
             pos.y += velocity.y * Time.fixedDeltaTime;
+
             if (!isHoldingJump)
             {
                 velocity.y += gravity * Time.fixedDeltaTime;
@@ -144,10 +158,6 @@ public class Player : MonoBehaviour
 
         }
 
-        if (isHoldingJump)
-        {
-            jumpTimer();
-        }
 
         Vector2 obstOrigin = new Vector2(pos.x + (transform.localScale.x / 2), (pos.y - (transform.localScale.y / 2)));
         RaycastHit2D obstHitX = Physics2D.Raycast(obstOrigin, Vector2.right, velocity.x * Time.fixedDeltaTime);
@@ -166,7 +176,7 @@ public class Player : MonoBehaviour
             {
 
                 Destroy(pared.gameObject);
-                SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
+                SceneManager.LoadSceneAsync(2, LoadSceneMode.Additive);
                 Time.timeScale = 0;
 
             }
@@ -174,7 +184,7 @@ public class Player : MonoBehaviour
 
         ///////////////////////////////////////// check collide up//////////////////////////////////////
 
-        if (Input.GetKey("z") && pressZ == false && isGrounded)
+        if ((Input.GetKey("z") || startDash == true) && pressZ == false && isGrounded)
         {
             Debug.Log("dash");
             StartCoroutine("dash");
@@ -200,7 +210,7 @@ public class Player : MonoBehaviour
                 {
 
                     Destroy(pared.gameObject);
-                    SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
+                    SceneManager.LoadSceneAsync(2, LoadSceneMode.Additive);
                     Time.timeScale = 0;
 
                 }
@@ -228,7 +238,7 @@ public class Player : MonoBehaviour
             {
 
                 Destroy(pared.gameObject);
-                SceneManager.LoadSceneAsync(1, LoadSceneMode.Additive);
+                SceneManager.LoadSceneAsync(2, LoadSceneMode.Additive);
                 Time.timeScale = 0;
 
             }
@@ -239,25 +249,16 @@ public class Player : MonoBehaviour
         transform.position = pos;
     }
 
-    private void jumpTimer()
-    {
-        timer -= Time.fixedDeltaTime;
-        if (timer <= 0)
-        {
-            isHoldingJump = false;
-        }
-    }
+
 
     private void death()
     {
         Destroy(gameObject);
         Time.timeScale = 0;
-
-        // SceneManager.LoadScene("GameOver");
-    }
-    private void changeLevel()
-    {
-        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
+        comms.life = 3;
+        comms.preguntado = false;
+        comms.paredSpawn = false;
+    SceneManager.LoadScene(3, LoadSceneMode.Single);
 
     }
 
@@ -272,14 +273,60 @@ public class Player : MonoBehaviour
     public IEnumerator dash()
     {
         Debug.Log("abajo");
+        animator.SetBool("dash?", true);
+        startDash = false;
         pressZ = true;
-        animator.SetBool("dash?", pressZ);
         yield return new WaitForSecondsRealtime(0.8f);
-        Debug.Log("arriba");
+        animator.SetBool("dash?", false);
         pressZ = false;
-        animator.SetBool("dash?", pressZ);
-    } 
+        Debug.Log("arriba");
+    }
 
+    public IEnumerator jump()
+    {
+        startJump = false;
+        isHoldingJump = true;
+        yield return new WaitForSecondsRealtime(0.1f);
+        isHoldingJump = false;
+       // isGrounded = true;
+
+    }
+
+    private void swipeUpCheck()
+    {
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+        {
+            startTouchPosition = Input.GetTouch(0).position;
+
+        }
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended)
+        {
+            endTouchPosition = Input.GetTouch(0).position;
+            if (endTouchPosition.y > startTouchPosition.y)
+            {
+                startJump = true;
+            }
+        }
+        
+    }
+
+    private void swipeDownCheck()
+    {
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+        {
+            startTouchPosition1 = Input.GetTouch(0).position;
+
+        }
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended)
+        {
+            endTouchPosition1 = Input.GetTouch(0).position;
+            if (endTouchPosition1.y < startTouchPosition1.y)
+            {
+                startDash = true;
+            }
+        }
+
+    }
 
 
 }

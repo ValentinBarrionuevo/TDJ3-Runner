@@ -8,7 +8,7 @@ public class Comms : MonoBehaviour
     public bool preguntado = false;
     public bool paredSpawn = false;
 
-    public int index;
+    public int index = 0;
 
     public List<Questions> unansweredQuestions;
 

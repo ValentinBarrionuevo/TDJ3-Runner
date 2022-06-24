@@ -22,6 +22,8 @@ public class Ground : MonoBehaviour
     Comms comms;
 
     public Obstacle obstacleTemplate;
+    public Obstacle obstacleTemplate2;
+
 
     public paredPregunta paredPregunta;
 
@@ -193,7 +195,7 @@ public class Ground : MonoBehaviour
                     for (int i = 0; i < obstacleNum; i++)
                     {
                         GameObject box = Instantiate(obstacleTemplate.gameObject);
-                        float y = 8;
+                        float y = 9.58f;
                         float halfWitdh = (65 / 2) - 5;
                         float left = go.transform.position.x - halfWitdh;
                         float right = go.transform.position.x + halfWitdh;
@@ -215,8 +217,8 @@ public class Ground : MonoBehaviour
                     int obstacleUpNum = Random.Range(1, 2);
                     for (int i = 0; i < obstacleUpNum; i++)
                     {
-                        GameObject box = Instantiate(obstacleTemplate.gameObject);
-                        float y = 16;
+                        GameObject box = Instantiate(obstacleTemplate2.gameObject);
+                        float y = 9.7f;
                         float halfWitdh = (65 / 2) - 5;
                         float left = go.transform.position.x - halfWitdh;
                         float right = go.transform.position.x + halfWitdh;
@@ -242,11 +244,12 @@ public class Ground : MonoBehaviour
         {
             if (comms.paredSpawn == false)
             {
+
                 comms.paredSpawn = true;
                 comms.preguntado = true;
 
                 GameObject pared = Instantiate(paredPregunta.gameObject);
-                float y = 17;
+                float y = 12.8f;
                 float halfWitdh = (65 / 2) - 1;
                 float left = go.transform.position.x - halfWitdh;
                 float right = go.transform.position.x + halfWitdh;
@@ -256,6 +259,7 @@ public class Ground : MonoBehaviour
                 Vector2 boxPos = new Vector2(x, y);
 
                 pared.transform.position = boxPos;
+
             }
 
         }
@@ -270,13 +274,13 @@ public class Ground : MonoBehaviour
 
     public IEnumerator askedBugFix()
     {
-        Debug.Log("esperando...");
-        yield return new WaitForSecondsRealtime(2f);
+       // Debug.Log("esperando...");
+        yield return new WaitForSecondsRealtime(1f);
 
         comms.preguntado = false;
         comms.paredSpawn = false;
 
-        Debug.Log("arreglado");
+       // Debug.Log("arreglado");
 
     }
 
